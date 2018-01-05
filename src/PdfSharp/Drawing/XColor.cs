@@ -1,4 +1,5 @@
 #region PDFsharp - A .NET library for processing PDF
+
 //
 // Authors:
 //   Stefan Lange
@@ -23,16 +24,17 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
+
 #endregion
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.ComponentModel;
+
 #if GDI
-using System.Drawing;
 #endif
 #if WPF
 using WpfColor = System.Windows.Media.Color;
@@ -40,7 +42,6 @@ using WpfColor = System.Windows.Media.Color;
 #if UWP
 using UwpColor = Windows.UI.Color;
 #endif
-
 
 // ReSharper disable RedundantNameQualifier
 
@@ -52,7 +53,7 @@ namespace PdfSharp.Drawing
     [DebuggerDisplay("clr=(A={A}, R={R}, G={G}, B={B} C={C}, M={M}, Y={Y}, K={K})")]
     public struct XColor
     {
-        XColor(uint argb)
+        private XColor(uint argb)
         {
             _cs = XColorSpace.Rgb;
             _a = (byte)((argb >> 24) & 0xff) / 255f;
@@ -68,7 +69,7 @@ namespace PdfSharp.Drawing
             //_cs.GetType(); // Suppress warning
         }
 
-        XColor(byte alpha, byte red, byte green, byte blue)
+        private XColor(byte alpha, byte red, byte green, byte blue)
         {
             _cs = XColorSpace.Rgb;
             _a = alpha / 255f;
@@ -84,7 +85,7 @@ namespace PdfSharp.Drawing
             //_cs.GetType(); // Suppress warning
         }
 
-        XColor(double alpha, double cyan, double magenta, double yellow, double black)
+        private XColor(double alpha, double cyan, double magenta, double yellow, double black)
         {
             _cs = XColorSpace.Cmyk;
             _a = (float)(alpha > 1 ? 1 : (alpha < 0 ? 0 : alpha));
@@ -99,11 +100,11 @@ namespace PdfSharp.Drawing
             CmykChanged();
         }
 
-        XColor(double cyan, double magenta, double yellow, double black)
+        private XColor(double cyan, double magenta, double yellow, double black)
             : this(1.0, cyan, magenta, yellow, black)
         { }
 
-        XColor(double gray)
+        private XColor(double gray)
         {
             _cs = XColorSpace.GrayScale;
             if (gray < 0)
@@ -125,9 +126,11 @@ namespace PdfSharp.Drawing
         }
 
 #if GDI
-        XColor(System.Drawing.Color color)
+
+        private XColor(System.Drawing.Color color)
             : this(color.A, color.R, color.G, color.B)
         { }
+
 #endif
 
 #if WPF
@@ -136,7 +139,7 @@ namespace PdfSharp.Drawing
         { }
 #endif
 
-#if GDI
+#if GDI && !NETSTANDARD
         XColor(KnownColor knownColor)
             : this(System.Drawing.Color.FromKnownColor(knownColor))
         { }
@@ -200,6 +203,7 @@ namespace PdfSharp.Drawing
         }
 
 #if GDI
+
         /// <summary>
         /// Creates an XColor structure from the specified System.Drawing.Color.
         /// </summary>
@@ -207,6 +211,7 @@ namespace PdfSharp.Drawing
         {
             return new XColor(color);
         }
+
 #endif
 
 #if WPF
@@ -239,6 +244,7 @@ namespace PdfSharp.Drawing
         }
 
 #if GDI
+
         /// <summary>
         /// Creates an XColor structure from the specified alpha value and color.
         /// </summary>
@@ -247,6 +253,7 @@ namespace PdfSharp.Drawing
             // Cast required to use correct constructor.
             return new XColor((byte)alpha, color.R, color.G, color.B);
         }
+
 #endif
 
 #if WPF
@@ -303,7 +310,7 @@ namespace PdfSharp.Drawing
             return new XColor(color);
         }
 
-#if GDI
+#if GDI && !NETSTANDARD
         /// <summary>
         /// Creates an XColor from the specified pre-defined color.
         /// </summary>
@@ -318,7 +325,7 @@ namespace PdfSharp.Drawing
         /// </summary>
         public static XColor FromName(string name)
         {
-#if GDI
+#if GDI && !NETSTANDARD
             // The implementation in System.Drawing.dll is interesting. It uses a ColorConverter
             // with hash tables, locking mechanisms etc. I'm not sure what problems that solves.
             // So I don't use the source, but the reflection.
@@ -373,6 +380,7 @@ namespace PdfSharp.Drawing
         {
             return System.Drawing.Color.FromArgb((int)(_a * 255), _r, _g, _b);
         }
+
 #endif
 
 #if WPF
@@ -396,7 +404,7 @@ namespace PdfSharp.Drawing
 #endif
 
         /// <summary>
-        /// Determines whether the specified object is a Color structure and is equivalent to this 
+        /// Determines whether the specified object is a Color structure and is equivalent to this
         /// Color structure.
         /// </summary>
         public override bool Equals(object obj)
@@ -565,7 +573,7 @@ namespace PdfSharp.Drawing
         ///<summary>
         /// One of the RGB values changed; recalculate other color representations.
         /// </summary>
-        void RgbChanged()
+        private void RgbChanged()
         {
             // ReSharper disable LocalVariableHidesMember
             _cs = XColorSpace.Rgb;
@@ -589,7 +597,7 @@ namespace PdfSharp.Drawing
         ///<summary>
         /// One of the CMYK values changed; recalculate other color representations.
         /// </summary>
-        void CmykChanged()
+        private void CmykChanged()
         {
             _cs = XColorSpace.Cmyk;
             float black = _k * 255;
@@ -603,7 +611,7 @@ namespace PdfSharp.Drawing
         ///<summary>
         /// The gray scale value changed; recalculate other color representations.
         /// </summary>
-        void GrayChanged()
+        private void GrayChanged()
         {
             _cs = XColorSpace.GrayScale;
             _r = (byte)(_gs * 255);
@@ -618,7 +626,7 @@ namespace PdfSharp.Drawing
         // Properties
 
         /// <summary>
-        /// Gets or sets the alpha value the specifies the transparency. 
+        /// Gets or sets the alpha value the specifies the transparency.
         /// The value is in the range from 1 (opaque) to 0 (completely transparent).
         /// </summary>
         public double A
@@ -800,25 +808,25 @@ namespace PdfSharp.Drawing
             }
         }
 
-        static void CheckByte(int val, string name)
+        private static void CheckByte(int val, string name)
         {
             if (val < 0 || val > 0xFF)
                 throw new ArgumentException(PSSR.InvalidValue(val, name, 0, 255));
         }
 
-        XColorSpace _cs;
+        private XColorSpace _cs;
 
-        float _a;  // alpha
+        private float _a;  // alpha
 
-        byte _r;   // \
-        byte _g;   // |--- RGB
-        byte _b;   // /
+        private byte _r;   // \
+        private byte _g;   // |--- RGB
+        private byte _b;   // /
 
-        float _c;  // \
-        float _m;  // |--- CMYK
-        float _y;  // |
-        float _k;  // /
+        private float _c;  // \
+        private float _m;  // |--- CMYK
+        private float _y;  // |
+        private float _k;  // /
 
-        float _gs; // >--- gray scale
+        private float _gs; // >--- gray scale
     }
 }
