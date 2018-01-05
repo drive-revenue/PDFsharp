@@ -1,0 +1,117 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD2_0;NETSTANDARD;GDI;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\AreaChartRenderer.cs" link="Charting.Renderers\AreaChartRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\AreaPlotAreaRenderer.cs" link="Charting.Renderers\AreaPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\AxisRenderer.cs" link="Charting.Renderers\AxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\AxisTitleRenderer.cs" link="Charting.Renderers\AxisTitleRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\BarChartRenderer.cs" link="Charting.Renderers\BarChartRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\BarClusteredLegendRenderer.cs" link="Charting.Renderers\BarClusteredLegendRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\BarClusteredPlotAreaRenderer.cs" link="Charting.Renderers\BarClusteredPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\BarDataLabelRenderer.cs" link="Charting.Renderers\BarDataLabelRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\BarGridlinesRenderer.cs" link="Charting.Renderers\BarGridlinesRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\BarPlotAreaRenderer.cs" link="Charting.Renderers\BarPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\BarStackedPlotAreaRenderer.cs" link="Charting.Renderers\BarStackedPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ChartRenderer.cs" link="Charting.Renderers\ChartRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\Colors.cs" link="Charting.Renderers\Colors.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnChartRenderer.cs" link="Charting.Renderers\ColumnChartRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnClusteredPlotAreaRenderer.cs" link="Charting.Renderers\ColumnClusteredPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnDataLabelRenderer.cs" link="Charting.Renderers\ColumnDataLabelRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnLikeChartRenderer.cs" link="Charting.Renderers\ColumnLikeChartRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnLikeGridlinesRenderer.cs" link="Charting.Renderers\ColumnLikeGridlinesRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnLikeLegendRenderer.cs" link="Charting.Renderers\ColumnLikeLegendRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnLikePlotAreaRenderer.cs" link="Charting.Renderers\ColumnLikePlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnPlotAreaRenderer.cs" link="Charting.Renderers\ColumnPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\ColumnStackedPlotAreaRenderer.cs" link="Charting.Renderers\ColumnStackedPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\CombinationChartRenderer.cs" link="Charting.Renderers\CombinationChartRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\Converter.cs" link="Charting.Renderers\Converter.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\DataLabelRenderer.cs" link="Charting.Renderers\DataLabelRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\GridlinesRenderer.cs" link="Charting.Renderers\GridlinesRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\HorizontalStackedYAxisRenderer.cs" link="Charting.Renderers\HorizontalStackedYAxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\HorizontalXAxisRenderer.cs" link="Charting.Renderers\HorizontalXAxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\HorizontalYAxisRenderer.cs" link="Charting.Renderers\HorizontalYAxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\LegendEntryRenderer.cs" link="Charting.Renderers\LegendEntryRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\LegendRenderer.cs" link="Charting.Renderers\LegendRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\LineChartRenderer.cs" link="Charting.Renderers\LineChartRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\LineFormatRenderer.cs" link="Charting.Renderers\LineFormatRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\LinePlotAreaRenderer.cs" link="Charting.Renderers\LinePlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\MarkerRenderer.cs" link="Charting.Renderers\MarkerRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\PieChartRenderer.cs" link="Charting.Renderers\PieChartRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\PieClosedPlotAreaRenderer.cs" link="Charting.Renderers\PieClosedPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\PieDataLabelRenderer.cs" link="Charting.Renderers\PieDataLabelRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\PieExplodedPlotAreaRenderer.cs" link="Charting.Renderers\PieExplodedPlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\PieLegendRenderer.cs" link="Charting.Renderers\PieLegendRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\PiePlotAreaRenderer.cs" link="Charting.Renderers\PiePlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\PlotAreaBorderRenderer.cs" link="Charting.Renderers\PlotAreaBorderRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\PlotAreaRenderer.cs" link="Charting.Renderers\PlotAreaRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\Renderer.cs" link="Charting.Renderers\Renderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\RendererInfo.cs" link="Charting.Renderers\RendererInfo.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\RendererParameters.cs" link="Charting.Renderers\RendererParameters.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\VerticalStackedYAxisRenderer.cs" link="Charting.Renderers\VerticalStackedYAxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\VerticalXAxisRenderer.cs" link="Charting.Renderers\VerticalXAxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\VerticalYAxisRenderer.cs" link="Charting.Renderers\VerticalYAxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\WallRenderer.cs" link="Charting.Renderers\WallRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\XAxisRenderer.cs" link="Charting.Renderers\XAxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting.Renderers\YAxisRenderer.cs" link="Charting.Renderers\YAxisRenderer.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\Axis.cs" link="Charting\Axis.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\AxisTitle.cs" link="Charting\AxisTitle.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\Chart.cs" link="Charting\Chart.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\ChartFrame.cs" link="Charting\ChartFrame.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\ChartObject.cs" link="Charting\ChartObject.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\DataLabel.cs" link="Charting\DataLabel.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\DocumentObject.cs" link="Charting\DocumentObject.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\DocumentObjectCollection.cs" link="Charting\DocumentObjectCollection.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\BlankType.cs" link="Charting\enums\BlankType.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\ChartType.cs" link="Charting\enums\ChartType.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\DataLabelPosition.cs" link="Charting\enums\DataLabelPosition.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\DataLabelType.cs" link="Charting\enums\DataLabelType.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\DockingType.cs" link="Charting\enums\DockingType.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\FontProperties.cs" link="Charting\enums\FontProperties.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\HorizontalAlignment.cs" link="Charting\enums\HorizontalAlignment.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\LineStyle.cs" link="Charting\enums\LineStyle.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\MarkerStyle.cs" link="Charting\enums\MarkerStyle.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\TickMarkType.cs" link="Charting\enums\TickMarkType.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\Underline.cs" link="Charting\enums\Underline.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\enums\VerticalAlignment.cs" link="Charting\enums\VerticalAlignment.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\FillFormat.cs" link="Charting\FillFormat.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\Font.cs" link="Charting\Font.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\Gridlines.cs" link="Charting\Gridlines.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\Legend.cs" link="Charting\Legend.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\LineFormat.cs" link="Charting\LineFormat.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\PlotArea.cs" link="Charting\PlotArea.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\Point.cs" link="Charting\Point.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\PSCSR.cs" link="Charting\PSCSR.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\Series.cs" link="Charting\Series.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\SeriesCollection.cs" link="Charting\SeriesCollection.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\SeriesElements.cs" link="Charting\SeriesElements.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\TickLabels.cs" link="Charting\TickLabels.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\XSeries.cs" link="Charting\XSeries.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\XSeriesElements.cs" link="Charting\XSeriesElements.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\XValue.cs" link="Charting\XValue.cs" />
+    <Compile Include="..\PdfSharp.Charting\Charting\XValues.cs" link="Charting\XValues.cs" />
+    <Compile Include="..\pdfsharp\root\VersionInfo.cs" link="root\VersionInfo.cs" />
+    <EmbeddedResource Include="..\PdfSharp.Charting\Resources\Messages.de.restext">
+      <Link>Resources\Messages.de.restext</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\PdfSharp.Charting\Resources\Messages.restext">
+      <Link>Resources\Messages.restext</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="4.5.0-preview1-25914-04" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PdfSharp-NetCore\PdfSharp-NetCore.csproj" />
+  </ItemGroup>
+  
+</Project>
