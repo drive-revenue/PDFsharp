@@ -1,4 +1,5 @@
 #region PDFsharp - A .NET library for processing PDF
+
 //
 // Authors:
 //   Stefan Lange
@@ -23,19 +24,21 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
+
 #endregion
 
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using PdfSharp.Fonts;
+
 #if CORE || GDI
+
 using GdiFont = System.Drawing.Font;
-using GdiFontStyle = System.Drawing.FontStyle;
+
 #endif
 #if WPF
 using System.Windows;
@@ -45,7 +48,7 @@ using WpfFontFamily = System.Windows.Media.FontFamily;
 using WpfTypeface = System.Windows.Media.Typeface;
 using WpfGlyphTypeface = System.Windows.Media.GlyphTypeface;
 #endif
-using PdfSharp.Internal;
+
 using PdfSharp.Fonts.OpenType;
 
 namespace PdfSharp.Drawing
@@ -57,16 +60,16 @@ namespace PdfSharp.Drawing
     internal class XFontSource
     {
         // Implementation Notes
-        // 
+        //
         // * XFontSource represents a single font (file) in memory.
         // * An XFontSource hold a reference to it OpenTypeFontface.
         // * To prevent large heap fragmentation this class must exists only once.
         // * TODO: ttcf
 
         // Signature of a true type collection font.
-        const uint ttcf = 0x66637474;
+        private const uint ttcf = 0x66637474;
 
-        XFontSource(byte[] bytes, ulong key)
+        private XFontSource(byte[] bytes, ulong key)
         {
             _fontName = null;
             _bytes = bytes;
@@ -90,7 +93,27 @@ namespace PdfSharp.Drawing
             return fontSource;
         }
 
-#if CORE || GDI
+#if NETSTANDARD
+
+        private static readonly FontLocalizator fl = new FontLocalizator();
+
+        internal static XFontSource GetOrCreateFromGdi(string typefaceKey, GdiFont gdiFont)
+        {
+            var fullPath = fl.GetFontPath(gdiFont.Name, gdiFont.Style);
+
+            if (fullPath != null)
+            {
+                var buffer = File.ReadAllBytes(fullPath);
+
+                return GetOrCreateFrom(typefaceKey, buffer);
+            }
+
+            return null;
+        }
+
+#endif
+
+#if CORE || GDI && !NETSTANDARD
         internal static XFontSource GetOrCreateFromGdi(string typefaceKey, GdiFont gdiFont)
         {
             byte[] bytes = ReadFontBytesFromGdi(gdiFont);
@@ -129,7 +152,6 @@ namespace PdfSharp.Drawing
             gdiFont.ToLogFont(logFont);
 
             hfont = NativeMethods.CreateFontIndirect(logFont);
-
 
             // IntPtr hdc = NativeMethods.CreateDC("DISPLAY", null, null, IntPtr.Zero);
             IntPtr hdc = NativeMethods.CreateCompatibleDC(IntPtr.Zero);
@@ -195,7 +217,7 @@ namespace PdfSharp.Drawing
         }
 #endif
 
-        static XFontSource GetOrCreateFrom(string typefaceKey, byte[] fontBytes)
+        private static XFontSource GetOrCreateFrom(string typefaceKey, byte[] fontBytes)
         {
             XFontSource fontSource;
             ulong key = FontHelper.CalcChecksum(fontBytes);
@@ -228,10 +250,11 @@ namespace PdfSharp.Drawing
             set
             {
                 _fontface = value;
-                _fontName = value.name.FullFontName;
+                _fontName = value.name?.FullFontName;
             }
         }
-        OpenTypeFontface _fontface;
+
+        private OpenTypeFontface _fontface;
 
         /// <summary>
         /// Gets the key that uniquely identifies this font source.
@@ -245,7 +268,8 @@ namespace PdfSharp.Drawing
                 return _key;
             }
         }
-        ulong _key;
+
+        private ulong _key;
 
         public void IncrementKey()
         {
@@ -261,7 +285,8 @@ namespace PdfSharp.Drawing
         {
             get { return _fontName; }
         }
-        string _fontName;
+
+        private string _fontName;
 
         /// <summary>
         /// Gets the bytes of the font.
@@ -270,7 +295,8 @@ namespace PdfSharp.Drawing
         {
             get { return _bytes; }
         }
-        readonly byte[] _bytes;
+
+        private readonly byte[] _bytes;
 
         public override int GetHashCode()
         {

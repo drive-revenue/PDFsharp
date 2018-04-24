@@ -1,4 +1,5 @@
 #region PDFsharp - A .NET library for processing PDF
+
 //
 // Authors:
 //   Stefan Lange
@@ -23,19 +24,20 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
+
 #endregion
 
 using System;
 using System.Diagnostics;
 using System.Globalization;
+
 #if CORE || GDI
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using GdiFontFamily = System.Drawing.FontFamily;
+
 using GdiFont = System.Drawing.Font;
 using GdiFontStyle = System.Drawing.FontStyle;
+
 #endif
 #if WPF
 using System.Windows;
@@ -49,6 +51,7 @@ using WpfStyleSimulations = System.Windows.Media.StyleSimulations;
 #if UWP
 using Windows.UI.Xaml.Media;
 #endif
+
 using PdfSharp.Fonts;
 using PdfSharp.Fonts.OpenType;
 using PdfSharp.Internal;
@@ -75,14 +78,15 @@ namespace PdfSharp.Drawing
         //
         // * Each XGlyphTypeface can belong to one or more XFont objects.
         // * An XGlyphTypeface hold an XFontFamily.
-        // * XGlyphTypeface hold a reference to an OpenTypeFontface. 
-        // * 
+        // * XGlyphTypeface hold a reference to an OpenTypeFontface.
+        // *
         //
 
-        const string KeyPrefix = "tk:";  // "typeface key"
+        private const string KeyPrefix = "tk:";  // "typeface key"
 
 #if CORE || GDI
-        XGlyphTypeface(string key, XFontFamily fontFamily, XFontSource fontSource, XStyleSimulations styleSimulations, GdiFont gdiFont)
+
+        private XGlyphTypeface(string key, XFontFamily fontFamily, XFontSource fontSource, XStyleSimulations styleSimulations, GdiFont gdiFont)
         {
             _key = key;
             _fontFamily = fontFamily;
@@ -96,9 +100,11 @@ namespace PdfSharp.Drawing
             _styleSimulations = styleSimulations;
             Initialize();
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Initializes a new instance of the <see cref="XGlyphTypeface"/> class by a font source.
         /// </summary>
@@ -116,6 +122,7 @@ namespace PdfSharp.Drawing
 
             Initialize();
         }
+
 #endif
 
 #if WPF
@@ -174,7 +181,7 @@ namespace PdfSharp.Drawing
                 if (fontResolverInfo == null)
                 {
                     // No fallback - just stop.
-                    throw new InvalidOperationException("No appropriate font found.");
+                    throw new InvalidOperationException($"No appropriate font found for family {familyName}.");
                 }
 
 #if CORE || GDI
@@ -244,6 +251,7 @@ namespace PdfSharp.Drawing
         }
 
 #if CORE || GDI
+
         public static XGlyphTypeface GetOrCreateFromGdi(GdiFont gdiFont)
         {
             // $TODO THHO Lock???
@@ -270,6 +278,7 @@ namespace PdfSharp.Drawing
 
             return glyphTypeface;
         }
+
 #endif
 
 #if WPF && !SILVERLIGHT
@@ -331,21 +340,24 @@ namespace PdfSharp.Drawing
         {
             get { return _fontFamily; }
         }
-        readonly XFontFamily _fontFamily;
+
+        private readonly XFontFamily _fontFamily;
 
         internal OpenTypeFontface Fontface
         {
             get { return _fontface; }
         }
-        readonly OpenTypeFontface _fontface;
+
+        private readonly OpenTypeFontface _fontface;
 
         public XFontSource FontSource
         {
             get { return _fontSource; }
         }
-        readonly XFontSource _fontSource;
 
-        void Initialize()
+        private readonly XFontSource _fontSource;
+
+        private void Initialize()
         {
             _familyName = _fontface.name.Name;
             if (string.IsNullOrEmpty(_faceName) || _faceName.StartsWith("?"))
@@ -374,7 +386,8 @@ namespace PdfSharp.Drawing
         {
             get { return _faceName; }
         }
-        string _faceName;
+
+        private string _faceName;
 
         /// <summary>
         /// Gets the English family name of the font, for example "Arial".
@@ -383,7 +396,8 @@ namespace PdfSharp.Drawing
         {
             get { return _familyName; }
         }
-        string _familyName;
+
+        private string _familyName;
 
         /// <summary>
         /// Gets the English subfamily name of the font,
@@ -393,7 +407,8 @@ namespace PdfSharp.Drawing
         {
             get { return _styleName; }
         }
-        string _styleName;
+
+        private string _styleName;
 
         /// <summary>
         /// Gets the English display name of the font,
@@ -403,7 +418,8 @@ namespace PdfSharp.Drawing
         {
             get { return _displayName; }
         }
-        string _displayName;
+
+        private string _displayName;
 
         /// <summary>
         /// Gets a value indicating whether the font weight is bold.
@@ -412,7 +428,8 @@ namespace PdfSharp.Drawing
         {
             get { return _isBold; }
         }
-        bool _isBold;
+
+        private bool _isBold;
 
         /// <summary>
         /// Gets a value indicating whether the font style is italic.
@@ -421,19 +438,21 @@ namespace PdfSharp.Drawing
         {
             get { return _isItalic; }
         }
-        bool _isItalic;
+
+        private bool _isItalic;
 
         public XStyleSimulations StyleSimulations
         {
             get { return _styleSimulations; }
         }
-        XStyleSimulations _styleSimulations;
+
+        private XStyleSimulations _styleSimulations;
 
         /// <summary>
         /// Gets the suffix of the face name in a PDF font and font descriptor.
         /// The name based on the effective value of bold and italic from the OS/2 table.
         /// </summary>
-        string GetFaceNameSuffix()
+        private string GetFaceNameSuffix()
         {
             // Use naming of Microsoft Word.
             if (IsBold)
@@ -475,7 +494,7 @@ namespace PdfSharp.Drawing
                 }
             }
             string key = KeyPrefix + familyName.ToLowerInvariant()
-                + (fontResolvingOptions.IsItalic ? "/i" : "/n") // normal / oblique / italic  
+                + (fontResolvingOptions.IsItalic ? "/i" : "/n") // normal / oblique / italic
                 + (fontResolvingOptions.IsBold ? "/700" : "/400") + "/5" // Stretch.Normal
                 + simulationSuffix;
             return key;
@@ -490,6 +509,7 @@ namespace PdfSharp.Drawing
         }
 
 #if CORE || GDI
+
         internal static string ComputeKey(GdiFont gdiFont)
         {
             string name1 = gdiFont.Name;
@@ -502,6 +522,7 @@ namespace PdfSharp.Drawing
             string key = KeyPrefix + name.ToLowerInvariant() + ((style & GdiFontStyle.Italic) == GdiFontStyle.Italic ? "/i" : "/n") + ((style & GdiFontStyle.Bold) == GdiFontStyle.Bold ? "/700" : "/400") + "/5"; // Stretch.Normal
             return key;
         }
+
 #endif
 #if WPF && !SILVERLIGHT
         internal static string ComputeKey(WpfGlyphTypeface wpfGlyphTypeface)
@@ -512,7 +533,6 @@ namespace PdfSharp.Drawing
             string name4 = wpfGlyphTypeface.ManufacturerNames[FontHelper.CultureInfoEnUs];
             string name5 = wpfGlyphTypeface.Win32FaceNames[FontHelper.CultureInfoEnUs];
             string name6 = wpfGlyphTypeface.Win32FamilyNames[FontHelper.CultureInfoEnUs];
-
 
             string name = familyName.ToLower() + '/' + faceName.ToLowerInvariant();
             string style = wpfGlyphTypeface.Style.ToString();
@@ -538,9 +558,11 @@ namespace PdfSharp.Drawing
         {
             get { return _key; }
         }
-        readonly string _key;
+
+        private readonly string _key;
 
 #if CORE || GDI
+
         internal GdiFont GdiFont
         {
             get { return _gdiFont; }

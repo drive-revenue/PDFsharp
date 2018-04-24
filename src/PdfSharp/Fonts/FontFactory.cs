@@ -1,4 +1,5 @@
 #region PDFsharp - A .NET library for processing PDF
+
 //
 // Authors:
 //   Stefan Lange
@@ -23,18 +24,17 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
+
 #endregion
 
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
+
 #if CORE || GDI
-using System.Drawing;
-using GdiFontFamily = System.Drawing.FontFamily;
-using GdiFont = System.Drawing.Font;
 #endif
 #if WPF
 using System.Windows;
@@ -44,6 +44,7 @@ using WpfFontFamily = System.Windows.Media.FontFamily;
 using WpfGlyphTypeface = System.Windows.Media.GlyphTypeface;
 using WpfTypeface = System.Windows.Media.Typeface;
 #endif
+
 using PdfSharp.Drawing;
 using PdfSharp.Fonts.OpenType;
 using PdfSharp.Internal;
@@ -163,6 +164,7 @@ namespace PdfSharp.Fonts
         }
 
 #if GDI
+
         /// <summary>
         /// Registers the font face.
         /// </summary>
@@ -192,6 +194,7 @@ namespace PdfSharp.Fonts
             }
             finally { Lock.ExitFontFactory(); }
         }
+
 #endif
 
         /// <summary>
@@ -302,14 +305,28 @@ namespace PdfSharp.Fonts
                     //    fontSource.IncrementKey();
                 }
 
-                OpenTypeFontface fontface = fontSource.Fontface;
+                var fontface = fontSource.Fontface;
                 if (fontface == null)
                 {
                     // Create OpenType fontface for this font source.
-                    fontSource.Fontface = new OpenTypeFontface(fontSource);
+                    try
+                    {
+                        fontSource.Fontface = new OpenTypeFontface(fontSource);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // todo: log
+                    }
                 }
+
+                if (fontSource.FontName == null)
+                {
+                    return null;
+                }
+
                 FontSourcesByKey.Add(fontSource.Key, fontSource);
                 FontSourcesByName.Add(fontSource.FontName, fontSource);
+
                 return fontSource;
             }
             finally { Lock.ExitFontFactory(); }
@@ -424,7 +441,7 @@ namespace PdfSharp.Fonts
         /// Maps font typeface key to font resolver info.
         /// </summary>
         //static readonly Dictionary<string, FontResolverInfo> FontResolverInfosByTypefaceKey = new Dictionary<string, FontResolverInfo>(StringComparer.OrdinalIgnoreCase);
-        static readonly Dictionary<string, FontResolverInfo> FontResolverInfosByName = new Dictionary<string, FontResolverInfo>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, FontResolverInfo> FontResolverInfosByName = new Dictionary<string, FontResolverInfo>(StringComparer.OrdinalIgnoreCase);
 
         ///// <summary>
         ///// Maps font resolver info key to font resolver info.
@@ -435,7 +452,7 @@ namespace PdfSharp.Fonts
         /// Maps typeface key or font name to font source.
         /// </summary>
         //static readonly Dictionary<string, XFontSource> FontSourcesByTypefaceKey = new Dictionary<string, XFontSource>(StringComparer.OrdinalIgnoreCase);
-        static readonly Dictionary<string, XFontSource> FontSourcesByName = new Dictionary<string, XFontSource>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, XFontSource> FontSourcesByName = new Dictionary<string, XFontSource>(StringComparer.OrdinalIgnoreCase);
 
         ///// <summary>
         ///// Maps font name to font source.
@@ -445,6 +462,6 @@ namespace PdfSharp.Fonts
         /// <summary>
         /// Maps font source key to font source.
         /// </summary>
-        static readonly Dictionary<ulong, XFontSource> FontSourcesByKey = new Dictionary<ulong, XFontSource>();
+        private static readonly Dictionary<ulong, XFontSource> FontSourcesByKey = new Dictionary<ulong, XFontSource>();
     }
 }

@@ -1,4 +1,5 @@
 #region PDFsharp - A .NET library for processing PDF
+
 //
 // Authors:
 //   Stefan Lange
@@ -23,8 +24,9 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
+
 #endregion
 
 using System;
@@ -33,13 +35,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using PdfSharp.Fonts;
+
 #if CORE || GDI
+
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using GdiFontFamily = System.Drawing.FontFamily;
 using GdiFont = System.Drawing.Font;
 using GdiFontStyle = System.Drawing.FontStyle;
 using GdiPrivateFontCollection = System.Drawing.Text.PrivateFontCollection;
+
 #endif
 #if WPF
 using System.Windows.Markup;
@@ -52,6 +55,7 @@ using WpfGlyphTypeface = System.Windows.Media.GlyphTypeface;
 namespace PdfSharp.Drawing
 {
 #if true
+
     ///<summary>
     /// Makes fonts that are not installed on the system available within the current application domain.<br/>
     /// In Silverlight required for all fonts used in PDF documents.
@@ -63,7 +67,7 @@ namespace PdfSharp.Drawing
         /// <summary>
         /// Initializes a new instance of the <see cref="XPrivateFontCollection"/> class.
         /// </summary>
-        XPrivateFontCollection()
+        private XPrivateFontCollection()
         {
             // HACK: Use one global PrivateFontCollection in GDI+
         }
@@ -75,7 +79,7 @@ namespace PdfSharp.Drawing
         //  set { privateFontCollection = value; }
         //}
 
-        GdiPrivateFontCollection GetPrivateFontCollection()
+        private GdiPrivateFontCollection GetPrivateFontCollection()
         {
             // Create only if really needed.
             if (_privateFontCollection == null)
@@ -85,6 +89,7 @@ namespace PdfSharp.Drawing
 
         // PrivateFontCollection of GDI+
         private GdiPrivateFontCollection _privateFontCollection;
+
 #endif
 
         /// <summary>
@@ -94,9 +99,11 @@ namespace PdfSharp.Drawing
         {
             get { return _singleton; }
         }
+
         internal static XPrivateFontCollection _singleton = new XPrivateFontCollection();
 
 #if GDI
+
         /// <summary>
         /// Adds the font data to the font collections.
         /// </summary>
@@ -112,7 +119,7 @@ namespace PdfSharp.Drawing
             // Add to GDI+ PrivateFontCollection
             int length = data.Length;
 
-            // Copy data without unsafe code 
+            // Copy data without unsafe code
             IntPtr ip = Marshal.AllocCoTaskMem(length);
             Marshal.Copy(data, 0, ip, length);
             GetPrivateFontCollection().AddMemoryFont(ip, length);
@@ -120,6 +127,7 @@ namespace PdfSharp.Drawing
             //Marshal.FreeCoTaskMem(ip);
             //privateFonts.Add(glyphTypeface);
         }
+
 #endif
 
         /// <summary>
@@ -135,6 +143,7 @@ namespace PdfSharp.Drawing
         }
 
 #if GDI
+
         /// <summary>
         /// Adds the specified font data to the global PrivateFontCollection.
         /// Family name and style are automatically retrieved from the font.
@@ -163,30 +172,35 @@ namespace PdfSharp.Drawing
         /// </summary>
         public static void Add(byte[] font)
         {
-            IntPtr unmanagedPointer = Marshal.AllocCoTaskMem(font.Length);
+            var unmanagedPointer = Marshal.AllocCoTaskMem(font.Length);
             Marshal.Copy(font, 0, unmanagedPointer, font.Length);
             Singleton.GetPrivateFontCollection().AddMemoryFont(unmanagedPointer, font.Length);
             // Do not free the memory here, AddMemoryFont stores a pointer, not a copy!
             //Marshal.FreeCoTaskMem(ip);
 
-            XFontSource fontSource = XFontSource.GetOrCreateFrom(font);
+            var fontSource = XFontSource.GetOrCreateFrom(font);
 
-            string familyName = fontSource.FontName;
+            if (fontSource == null)
+            {
+                return;
+            }
+
+            var familyName = fontSource.FontName;
 
             if (familyName.EndsWith(" Regular", StringComparison.OrdinalIgnoreCase))
                 familyName = familyName.Substring(0, familyName.Length - 8);
 
-            bool bold = fontSource.Fontface.os2.IsBold;
-            bool italic = fontSource.Fontface.os2.IsItalic;
+            var bold = fontSource.Fontface.os2.IsBold;
+            var italic = fontSource.Fontface.os2.IsItalic;
             IncompetentlyMakeAHackToFixAProblemYouWoldNeverHaveIfYouUseAFontResolver(fontSource, ref familyName, ref bold, ref italic);
-            string key = MakeKey(familyName, bold, italic);
+            var key = MakeKey(familyName, bold, italic);
             Singleton._fontSources.Add(key, fontSource);
 
-            string typefaceKey = XGlyphTypeface.ComputeKey(familyName, bold, italic);
+            var typefaceKey = XGlyphTypeface.ComputeKey(familyName, bold, italic);
             FontFactory.CacheExistingFontSourceWithNewTypefaceKey(typefaceKey, fontSource);
         }
 
-        static void IncompetentlyMakeAHackToFixAProblemYouWoldNeverHaveIfYouUseAFontResolver(XFontSource fontSource,
+        private static void IncompetentlyMakeAHackToFixAProblemYouWoldNeverHaveIfYouUseAFontResolver(XFontSource fontSource,
             ref string familyName, ref bool bold, ref bool italic)
         {
             const string regularSuffix = " Regular";
@@ -198,36 +212,37 @@ namespace PdfSharp.Drawing
             if (familyName.EndsWith(regularSuffix, StringComparison.OrdinalIgnoreCase))
             {
                 familyName = familyName.Substring(0, familyName.Length - regularSuffix.Length);
-                Debug.Assert(!bold && !italic);
+                //Debug.Assert(!bold && !italic);
                 bold = italic = false;
             }
             else if (familyName.EndsWith(boldItalicSuffix, StringComparison.OrdinalIgnoreCase) || familyName.EndsWith(italicBoldSuffix, StringComparison.OrdinalIgnoreCase))
             {
                 familyName = familyName.Substring(0, familyName.Length - boldItalicSuffix.Length);
-                Debug.Assert(bold && italic);
+                //Debug.Assert(bold && italic);
                 bold = italic = true;
             }
             else if (familyName.EndsWith(boldSuffix, StringComparison.OrdinalIgnoreCase))
             {
                 familyName = familyName.Substring(0, familyName.Length - boldSuffix.Length);
-                Debug.Assert(bold && !italic);
+                //Debug.Assert(bold && !italic);
                 bold = true;
                 italic = false;
             }
             else if (familyName.EndsWith(italicSuffix, StringComparison.OrdinalIgnoreCase))
             {
                 familyName = familyName.Substring(0, familyName.Length - italicSuffix.Length);
-                Debug.Assert(!bold && italic);
+                //Debug.Assert(!bold && italic);
                 bold = false;
                 italic = true;
             }
             else
             {
-                Debug.Assert(!bold && !italic);
+                //Debug.Assert(!bold && !italic);
                 bold = false;
                 italic = false;
             }
         }
+
 #endif
 
         /// <summary>
@@ -284,7 +299,6 @@ namespace PdfSharp.Drawing
 
             // TODO: What means 'Multiple family names should be separated by commas.'?
             // does not work
-
 
             if (String.IsNullOrEmpty(familyName))
                 throw new ArgumentNullException("familyName");
@@ -352,6 +366,7 @@ namespace PdfSharp.Drawing
         //}
 
 #if GDI
+
         internal static GdiFont TryCreateFont(string name, double size, GdiFontStyle style, out XFontSource fontSource)
         {
             fontSource = null;
@@ -396,6 +411,7 @@ namespace PdfSharp.Drawing
             }
             return null;
         }
+
 #endif
 
 #if WPF && !SILVERLIGHT
@@ -410,24 +426,27 @@ namespace PdfSharp.Drawing
         }
 #endif
 
-        static string MakeKey(string familyName, XFontStyle style)
+        private static string MakeKey(string familyName, XFontStyle style)
         {
             return MakeKey(familyName, (style & XFontStyle.Bold) != 0, (style & XFontStyle.Italic) != 0);
         }
 
-        static string MakeKey(string familyName, bool bold, bool italic)
+        private static string MakeKey(string familyName, bool bold, bool italic)
         {
             return familyName + "#" + (bold ? "b" : "") + (italic ? "i" : "");
         }
 
-        readonly Dictionary<string, XGlyphTypeface> _typefaces = new Dictionary<string, XGlyphTypeface>();
+        private readonly Dictionary<string, XGlyphTypeface> _typefaces = new Dictionary<string, XGlyphTypeface>();
 #if GDI
+
         //List<XGlyphTypeface> privateFonts = new List<XGlyphTypeface>();
-        readonly Dictionary<string, XFontSource> _fontSources = new Dictionary<string, XFontSource>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, XFontSource> _fontSources = new Dictionary<string, XFontSource>(StringComparer.OrdinalIgnoreCase);
+
 #endif
 #if WPF
         readonly Dictionary<string, WpfFontFamily> _fontFamilies = new Dictionary<string, WpfFontFamily>(StringComparer.OrdinalIgnoreCase);
 #endif
     }
+
 #endif
 }

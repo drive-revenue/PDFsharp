@@ -1,4 +1,5 @@
 #region PDFsharp - A .NET library for processing PDF
+
 //
 // Authors:
 //   Stefan Lange
@@ -23,15 +24,16 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
+
 #endregion
 
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
+
 #if GDI
+
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -39,9 +41,9 @@ using GdiPoint = System.Drawing.Point;
 using GdiSize = System.Drawing.Size;
 using GdiRect = System.Drawing.Rectangle;
 using GdiPointF = System.Drawing.PointF;
-using GdiSizeF = System.Drawing.SizeF;
 using GdiRectF = System.Drawing.RectangleF;
 using GdiMatrix = System.Drawing.Drawing2D.Matrix;
+
 #endif
 #if WPF
 using System.Windows;
@@ -74,6 +76,7 @@ using SysPoint = Windows.Foundation.Point;
 using SysSize = Windows.Foundation.Size;
 using SysRect = Windows.Foundation.Rect;
 #endif
+
 using PdfSharp.Pdf;
 using PdfSharp.Drawing.Pdf;
 using PdfSharp.Internal;
@@ -90,7 +93,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
     /// Holds information about the current state of the XGraphics object.
     /// </summary>
     [Flags]
-    enum InternalGraphicsMode
+    internal enum InternalGraphicsMode
     {
         DrawingGdiGraphics,
         DrawingPdfContent,
@@ -107,6 +110,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Initializes a new instance of the XGraphics class.
         /// </summary>
@@ -114,7 +118,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// <param name="size">The size.</param>
         /// <param name="pageUnit">The page unit.</param>
         /// <param name="pageDirection">The page direction.</param>
-        XGraphics(Graphics gfx, XSize size, XGraphicsUnit pageUnit, XPageDirection pageDirection)
+        private XGraphics(Graphics gfx, XSize size, XGraphicsUnit pageUnit, XPageDirection pageDirection)
         {
             if (gfx == null)
             {
@@ -162,6 +166,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             _pageDirection = pageDirection;
             Initialize();
         }
+
 #endif
 
 #if WPF && !SILVERLIGHT
@@ -345,7 +350,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// <summary>
         /// Initializes a new instance of the XGraphics class for drawing on a PDF page.
         /// </summary>
-        XGraphics(PdfPage page, XGraphicsPdfPageOptions options, XGraphicsUnit pageUnit, XPageDirection pageDirection)
+        private XGraphics(PdfPage page, XGraphicsPdfPageOptions options, XGraphicsUnit pageUnit, XPageDirection pageDirection)
         {
             if (page == null)
                 throw new ArgumentNullException("page");
@@ -434,12 +439,10 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// <summary>
         /// Initializes a new instance of the XGraphics class used for drawing on a form.
         /// </summary>
-        XGraphics(XForm form)
+        private XGraphics(XForm form)
         {
-            if (form == null)
-                throw new ArgumentNullException("form");
+            _form = form ?? throw new ArgumentNullException("form");
 
-            _form = form;
             form.AssociateGraphics(this);
 
             _gsStack = new GraphicsStateStack(this);
@@ -465,7 +468,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
                     {
                         IntPtr hdc = refgfx.GetHdc();
 #if true_
-                        // This code comes from my C++ RenderContext and checks some confusing details in connection 
+                        // This code comes from my C++ RenderContext and checks some confusing details in connection
                         // with metafiles.
                         //                                                                                    Display                 | LaserJet
                         //                                                                               DPI   96 : 120               | 300
@@ -476,13 +479,12 @@ namespace PdfSharp.Drawing  // #??? Clean up
                                                                                                       // My monitor is a Sony SDM-N80 and its size is EXACTLY 360mm x 290mm!!
                                                                                                       // It is an 18.1" Flat Panel LCD from 2002 and these are the values
                                                                                                       // an older display drivers reports in about 2003:
-                                                                                                      //        Display  
+                                                                                                      //        Display
                                                                                                       //  DPI   96 : 120
                                                                                                       //  --------------
                                                                                                       //       330 : 254
                                                                                                       //       254 : 203
                                                                                                       // Obviously my ATI driver reports the exact size of the monitor.
-
 
                         // device size in pixel
                         int horzSizePixel = NativeMethods.GetDeviceCaps(hdc, NativeMethods.HORZRES);     // = 1280 : 1280             | 4676
@@ -520,7 +522,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
                 else
                 {
                     Metafile = null;
-                    _gfx = Graphics.FromHwnd(IntPtr.Zero);
+                    //_gfx = Graphics.FromHwnd(IntPtr.Zero);
+                    _gfx = null;
                 }
                 if (form.Owner != null)
                     _renderer = new PdfSharp.Drawing.Pdf.XGraphicsPdfRenderer(form, this);
@@ -561,7 +564,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// </summary>
         public static XGraphics CreateMeasureContext(XSize size, XGraphicsUnit pageUnit, XPageDirection pageDirection)
         {
-#if CORE
+#if CORE || NETSTANDARD
             //throw new InvalidOperationException("No measure context in CORE build.");
             PdfDocument dummy = new PdfDocument();
             PdfPage page = dummy.AddPage();
@@ -569,7 +572,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             XGraphics gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Append, pageUnit, pageDirection);
             return gfx;
 #endif
-#if GDI && !WPF
+#if GDI && !WPF && !NETSTANDARD
             //XGraphics gfx = new XGraphics((System.Drawing.Graphics)null, size, pageUnit, pageDirection);
             XGraphics gfx = new XGraphics((System.Drawing.Graphics)null, size, pageUnit, pageDirection);
             return gfx;
@@ -588,6 +591,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Creates a new instance of the XGraphics class from a System.Drawing.Graphics object.
         /// </summary>
@@ -775,7 +779,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// <summary>
         /// Internal setup.
         /// </summary>
-        void Initialize()
+        private void Initialize()
         {
             _pageOrigin = new XPoint();
 
@@ -884,7 +888,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             Dispose(true);
         }
 
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!_disposed)
             {
@@ -938,7 +942,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
                 }
             }
         }
-        bool _disposed;
+
+        private bool _disposed;
 
         /// <summary>
         /// Internal hack for MigraDoc. Will be removed in further releases.
@@ -951,7 +956,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
             get { return _muh; }
             set { _muh = value; }
         }
-        PdfFontEncoding _muh;
+
+        private PdfFontEncoding _muh;
 
         /// <summary>
         /// A value indicating whether GDI+ or WPF is used as context.
@@ -972,7 +978,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
             //    throw new NotImplementedException("PageUnit must be XGraphicsUnit.Point in current implementation.");
             //}
         }
-        readonly XGraphicsUnit _pageUnit;
+
+        private readonly XGraphicsUnit _pageUnit;
 
         /// <summary>
         /// Gets or sets the a value indicating in which direction y-value grow.
@@ -987,7 +994,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
                     throw new NotImplementedException("PageDirection must be XPageDirection.Downwards in current implementation.");
             }
         }
-        readonly XPageDirection _pageDirection;
+
+        private readonly XPageDirection _pageDirection;
 
         /// <summary>
         /// Gets the current page origin. Setting the origin is not yet implemented.
@@ -1002,7 +1010,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
                     throw new NotImplementedException("PageOrigin cannot be modified in current implementation.");
             }
         }
-        XPoint _pageOrigin;
+
+        private XPoint _pageOrigin;
 
         /// <summary>
         /// Gets the current size of the page.
@@ -1016,14 +1025,16 @@ namespace PdfSharp.Drawing  // #??? Clean up
             //  throw new NotImplementedException("PageSize cannot be modified in current implementation.");
             //}
         }
-        XSize _pageSize;
-        XSize _pageSizePoints;
+
+        private XSize _pageSize;
+        private XSize _pageSizePoints;
 
         #region Drawing
 
         // ----- DrawLine -----------------------------------------------------------------------------
 
 #if GDI
+
         /// <summary>
         /// Draws a line connecting two Point structures.
         /// </summary>
@@ -1032,6 +1043,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             // Because of overloading the cast is NOT redundant.
             DrawLine(pen, (double)pt1.X, (double)pt1.Y, (double)pt2.X, (double)pt2.Y);
         }
+
 #endif
 
 #if WPF
@@ -1045,6 +1057,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a line connecting two GdiPointF structures.
         /// </summary>
@@ -1052,6 +1065,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawLine(pen, pt1.X, pt1.Y, pt2.X, pt2.Y);
         }
+
 #endif
 
         /// <summary>
@@ -1099,6 +1113,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- DrawLines ----------------------------------------------------------------------------
 
 #if GDI
+
         /// <summary>
         /// Draws a series of line segments that connect an array of points.
         /// </summary>
@@ -1106,6 +1121,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawLines(pen, MakePointFArray(points, 0, points.Length));
         }
+
 #endif
 
 #if WPF || NETFX_CORE
@@ -1119,6 +1135,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a series of line segments that connect an array of points.
         /// </summary>
@@ -1144,6 +1161,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             if (_renderer != null)
                 _renderer.DrawLines(pen, MakeXPointArray(points, 0, points.Length));
         }
+
 #endif
 
         /// <summary>
@@ -1234,6 +1252,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- DrawBezier ---------------------------------------------------------------------------
 
 #if GDI
+
         /// <summary>
         /// Draws a Bézier spline defined by four points.
         /// </summary>
@@ -1244,6 +1263,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
               (double)pt3.X, (double)pt3.Y, (double)pt4.X, (double)pt4.Y);
             // ReSharper restore RedundantCast
         }
+
 #endif
 
 #if WPF
@@ -1257,6 +1277,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a Bézier spline defined by four points.
         /// </summary>
@@ -1264,6 +1285,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawBezier(pen, pt1.X, pt1.Y, pt2.X, pt2.Y, pt3.X, pt3.Y, pt4.X, pt4.Y);
         }
+
 #endif
 
         /// <summary>
@@ -1325,6 +1347,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- DrawBeziers --------------------------------------------------------------------------
 
 #if GDI
+
         /// <summary>
         /// Draws a series of Bézier splines from an array of points.
         /// </summary>
@@ -1332,6 +1355,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawBeziers(pen, MakeXPointArray(points, 0, points.Length));
         }
+
 #endif
 
 #if WPF
@@ -1345,6 +1369,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a series of Bézier splines from an array of points.
         /// </summary>
@@ -1352,6 +1377,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawBeziers(pen, MakeXPointArray(points, 0, points.Length));
         }
+
 #endif
 
         /// <summary>
@@ -1416,6 +1442,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- DrawCurve ----------------------------------------------------------------------------
 
 #if GDI
+
         /// <summary>
         /// Draws a cardinal spline through a specified array of points.
         /// </summary>
@@ -1432,6 +1459,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawCurve(pen, MakePointFArray(points, offset, numberOfSegments), tension);
         }
+
 #endif
 
 #if WPF
@@ -1453,6 +1481,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a cardinal spline through a specified array of points.
         /// </summary>
@@ -1460,6 +1489,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawCurve(pen, MakeXPointArray(points, 0, points.Length), 0.5);
         }
+
 #endif
 
         /// <summary>
@@ -1471,18 +1501,20 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
-        /// Draws a cardinal spline through a specified array of points using a specified tension. 
+        /// Draws a cardinal spline through a specified array of points using a specified tension.
         /// </summary>
         public void DrawCurve(XPen pen, GdiPoint[] points, double tension)
         {
             DrawCurve(pen, MakeXPointArray(points, 0, points.Length), tension);
         }
+
 #endif
 
 #if WPF
         /// <summary>
-        /// Draws a cardinal spline through a specified array of points using a specified tension. 
+        /// Draws a cardinal spline through a specified array of points using a specified tension.
         /// </summary>
         public void DrawCurve(XPen pen, SysPoint[] points, double tension)
         {
@@ -1500,8 +1532,9 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
-        /// Draws a cardinal spline through a specified array of points using a specified tension. 
+        /// Draws a cardinal spline through a specified array of points using a specified tension.
         /// </summary>
         public void DrawCurve(XPen pen, GdiPointF[] points, double tension)
         {
@@ -1524,6 +1557,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawCurve(pen, MakeXPointArray(points, offset, numberOfSegments), tension);
         }
+
 #endif
 
         /// <summary>
@@ -1538,7 +1572,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Draws a cardinal spline through a specified array of points using a specified tension. 
+        /// Draws a cardinal spline through a specified array of points using a specified tension.
         /// </summary>
         public void DrawCurve(XPen pen, XPoint[] points, double tension)
         {
@@ -1596,6 +1630,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- DrawArc ------------------------------------------------------------------------------
 
 #if GDI
+
         /// <summary>
         /// Draws an arc representing a portion of an ellipse.
         /// </summary>
@@ -1604,9 +1639,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             // Because of overloading the cast is NOT redundant.
             DrawArc(pen, (double)rect.X, (double)rect.Y, (double)rect.Width, (double)rect.Height, startAngle, sweepAngle);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws an arc representing a portion of an ellipse.
         /// </summary>
@@ -1614,6 +1651,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawArc(pen, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle);
         }
+
 #endif
 
         /// <summary>
@@ -1676,6 +1714,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke -----
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangle.
         /// </summary>
@@ -1684,9 +1723,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             // Because of overloading the cast is NOT redundant.
             DrawRectangle(pen, (double)rect.X, (double)rect.Y, (double)rect.Width, (double)rect.Height);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangle.
         /// </summary>
@@ -1694,6 +1735,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
         /// <summary>
@@ -1746,6 +1788,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangle.
         /// </summary>
@@ -1754,9 +1797,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             // Because of overloading the cast is NOT redundant.
             DrawRectangle(brush, (double)rect.X, (double)rect.Y, (double)rect.Width, (double)rect.Height);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangle.
         /// </summary>
@@ -1764,6 +1809,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawRectangle(brush, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
         /// <summary>
@@ -1814,6 +1860,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke and fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangle.
         /// </summary>
@@ -1822,9 +1869,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             // Because of overloading the cast is NOT redundant.
             DrawRectangle(pen, brush, (double)rect.X, (double)rect.Y, (double)rect.Width, (double)rect.Height);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangle.
         /// </summary>
@@ -1832,6 +1881,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawRectangle(pen, brush, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
         /// <summary>
@@ -1884,6 +1934,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke -----
 
 #if GDI
+
         /// <summary>
         /// Draws a series of rectangles.
         /// </summary>
@@ -1896,9 +1947,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
 
             DrawRectangles(pen, null, rectangles);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a series of rectangles.
         /// </summary>
@@ -1911,6 +1964,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 
             DrawRectangles(pen, null, rectangles);
         }
+
 #endif
 
         /// <summary>
@@ -1929,6 +1983,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a series of rectangles.
         /// </summary>
@@ -1941,9 +1996,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
 
             DrawRectangles(null, brush, rectangles);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a series of rectangles.
         /// </summary>
@@ -1956,6 +2013,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 
             DrawRectangles(null, brush, rectangles);
         }
+
 #endif
 
         /// <summary>
@@ -1974,6 +2032,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke and fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a series of rectangles.
         /// </summary>
@@ -2006,9 +2065,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
                 }
             }
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a series of rectangles.
         /// </summary>
@@ -2041,6 +2102,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
                 }
             }
         }
+
 #endif
 
         /// <summary>
@@ -2100,6 +2162,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke -----
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangles with round corners.
         /// </summary>
@@ -2107,6 +2170,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawRoundedRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
         }
+
 #endif
 
 #if WPF
@@ -2120,6 +2184,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangles with round corners.
         /// </summary>
@@ -2127,6 +2192,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawRoundedRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
         }
+
 #endif
 
         /// <summary>
@@ -2151,6 +2217,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangles with round corners.
         /// </summary>
@@ -2158,6 +2225,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawRoundedRectangle(brush, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
         }
+
 #endif
 
 #if WPF
@@ -2171,6 +2239,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangles with round corners.
         /// </summary>
@@ -2178,6 +2247,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawRoundedRectangle(brush, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
         }
+
 #endif
 
         /// <summary>
@@ -2202,6 +2272,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke and fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangles with round corners.
         /// </summary>
@@ -2212,6 +2283,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
                 (double)ellipseSize.Width, (double)ellipseSize.Height);
             // ReSharper restore RedundantCast
         }
+
 #endif
 
 #if WPF
@@ -2225,6 +2297,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a rectangles with round corners.
         /// </summary>
@@ -2232,6 +2305,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawRoundedRectangle(pen, brush, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
         }
+
 #endif
 
         /// <summary>
@@ -2286,6 +2360,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke -----
 
 #if GDI
+
         /// <summary>
         /// Draws an ellipse defined by a bounding rectangle.
         /// </summary>
@@ -2293,9 +2368,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawEllipse(pen, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws an ellipse defined by a bounding rectangle.
         /// </summary>
@@ -2303,6 +2380,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawEllipse(pen, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
         /// <summary>
@@ -2352,6 +2430,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws an ellipse defined by a bounding rectangle.
         /// </summary>
@@ -2359,9 +2438,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawEllipse(brush, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws an ellipse defined by a bounding rectangle.
         /// </summary>
@@ -2369,6 +2450,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawEllipse(brush, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
         /// <summary>
@@ -2417,6 +2499,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke and fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws an ellipse defined by a bounding rectangle.
         /// </summary>
@@ -2424,9 +2507,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawEllipse(pen, brush, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws an ellipse defined by a bounding rectangle.
         /// </summary>
@@ -2434,6 +2519,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawEllipse(pen, brush, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
         /// <summary>
@@ -2507,6 +2593,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke -----
 
 #if GDI
+
         /// <summary>
         /// Draws a polygon defined by an array of points.
         /// </summary>
@@ -2514,6 +2601,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPolygon(pen, MakeXPointArray(points, 0, points.Length));
         }
+
 #endif
 
 #if WPF
@@ -2527,6 +2615,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a polygon defined by an array of points.
         /// </summary>
@@ -2534,6 +2623,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPolygon(pen, MakeXPointArray(points, 0, points.Length));
         }
+
 #endif
 
         /// <summary>
@@ -2576,6 +2666,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a polygon defined by an array of points.
         /// </summary>
@@ -2583,6 +2674,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPolygon(brush, MakeXPointArray(points, 0, points.Length), fillmode);
         }
+
 #endif
 
 #if WPF
@@ -2596,6 +2688,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a polygon defined by an array of points.
         /// </summary>
@@ -2603,6 +2696,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPolygon(brush, MakeXPointArray(points, 0, points.Length), fillmode);
         }
+
 #endif
 
         /// <summary>
@@ -2643,6 +2737,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke and fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a polygon defined by an array of points.
         /// </summary>
@@ -2650,6 +2745,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPolygon(pen, brush, MakeXPointArray(points, 0, points.Length), fillmode);
         }
+
 #endif
 
 #if WPF
@@ -2663,6 +2759,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a polygon defined by an array of points.
         /// </summary>
@@ -2670,6 +2767,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPolygon(pen, brush, MakeXPointArray(points, 0, points.Length), fillmode);
         }
+
 #endif
 
         /// <summary>
@@ -2720,6 +2818,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke -----
 
 #if GDI
+
         /// <summary>
         /// Draws a pie defined by an ellipse.
         /// </summary>
@@ -2729,9 +2828,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             DrawPie(pen, (double)rect.X, (double)rect.Y, (double)rect.Width, (double)rect.Height, startAngle, sweepAngle);
             // ReSharper restore RedundantCast
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a pie defined by an ellipse.
         /// </summary>
@@ -2739,6 +2840,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPie(pen, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle);
         }
+
 #endif
 
         /// <summary>
@@ -2783,6 +2885,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a pie defined by an ellipse.
         /// </summary>
@@ -2791,9 +2894,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             // Because of overloading the cast is NOT redundant.
             DrawPie(brush, (double)rect.X, (double)rect.Y, (double)rect.Width, (double)rect.Height, startAngle, sweepAngle);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a pie defined by an ellipse.
         /// </summary>
@@ -2801,6 +2906,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPie(brush, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle);
         }
+
 #endif
 
         /// <summary>
@@ -2845,6 +2951,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke and fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a pie defined by an ellipse.
         /// </summary>
@@ -2852,9 +2959,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPie(pen, brush, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a pie defined by an ellipse.
         /// </summary>
@@ -2862,6 +2971,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawPie(pen, brush, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle);
         }
+
 #endif
 
         /// <summary>
@@ -2930,6 +3040,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke -----
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -2937,6 +3048,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, null, MakeXPointArray(points, 0, points.Length), XFillMode.Alternate, 0.5);
         }
+
 #endif
 
 #if WPF
@@ -2950,6 +3062,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -2957,6 +3070,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, null, MakeXPointArray(points, 0, points.Length), XFillMode.Alternate, 0.5);
         }
+
 #endif
 
         /// <summary>
@@ -2968,6 +3082,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -2975,6 +3090,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, null, MakeXPointArray(points, 0, points.Length), XFillMode.Alternate, tension);
         }
+
 #endif
 
 #if WPF
@@ -2988,6 +3104,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -2995,6 +3112,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, null, MakeXPointArray(points, 0, points.Length), XFillMode.Alternate, tension);
         }
+
 #endif
 
         /// <summary>
@@ -3008,6 +3126,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3015,6 +3134,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(null, brush, MakeXPointArray(points, 0, points.Length), XFillMode.Alternate, 0.5);
         }
+
 #endif
 
 #if WPF
@@ -3028,6 +3148,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3035,6 +3156,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(null, brush, MakeXPointArray(points, 0, points.Length), XFillMode.Alternate, 0.5);
         }
+
 #endif
 
         /// <summary>
@@ -3046,6 +3168,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3053,6 +3176,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(null, brush, MakeXPointArray(points, 0, points.Length), fillmode, 0.5);
         }
+
 #endif
 
 #if WPF
@@ -3066,6 +3190,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3073,6 +3198,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(null, brush, MakeXPointArray(points, 0, points.Length), fillmode, 0.5);
         }
+
 #endif
 
         /// <summary>
@@ -3084,6 +3210,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3091,6 +3218,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(null, brush, MakeXPointArray(points, 0, points.Length), fillmode, tension);
         }
+
 #endif
 
 #if WPF
@@ -3104,6 +3232,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3111,6 +3240,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(null, brush, MakeXPointArray(points, 0, points.Length), fillmode, tension);
         }
+
 #endif
 
         /// <summary>
@@ -3124,6 +3254,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- stroke and fill -----
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3131,6 +3262,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, brush, MakeXPointArray(points, 0, points.Length), XFillMode.Alternate, 0.5);
         }
+
 #endif
 
 #if WPF
@@ -3144,6 +3276,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3151,6 +3284,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, brush, MakeXPointArray(points, 0, points.Length), XFillMode.Alternate, 0.5);
         }
+
 #endif
 
         /// <summary>
@@ -3162,6 +3296,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3169,6 +3304,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, brush, MakeXPointArray(points, 0, points.Length), fillmode, 0.5);
         }
+
 #endif
 
 #if WPF
@@ -3182,6 +3318,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3189,6 +3326,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, brush, MakeXPointArray(points, 0, points.Length), fillmode, 0.5);
         }
+
 #endif
 
         /// <summary>
@@ -3200,6 +3338,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3207,6 +3346,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, brush, MakeXPointArray(points, 0, points.Length), fillmode, tension);
         }
+
 #endif
 
 #if WPF
@@ -3220,6 +3360,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws a closed cardinal spline defined by an array of points.
         /// </summary>
@@ -3227,6 +3368,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawClosedCurve(pen, brush, MakeXPointArray(points, 0, points.Length), fillmode, tension);
         }
+
 #endif
 
         /// <summary>
@@ -3413,6 +3555,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- DrawString ---------------------------------------------------------------------------
 
 #if GDI
+
         /// <summary>
         /// Draws the specified text string.
         /// </summary>
@@ -3420,6 +3563,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawString(s, font, brush, new XRect(point.X, point.Y, 0, 0), XStringFormats.Default);
         }
+
 #endif
 
         /// <summary>
@@ -3431,6 +3575,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws the specified text string.
         /// </summary>
@@ -3438,6 +3583,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawString(s, font, brush, new XRect(point.X, point.Y, 0, 0), format);
         }
+
 #endif
 
         /// <summary>
@@ -3465,6 +3611,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws the specified text string.
         /// </summary>
@@ -3472,6 +3619,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawString(s, font, brush, new XRect(layoutRectangle), XStringFormats.Default);
         }
+
 #endif
 
         /// <summary>
@@ -3483,6 +3631,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws the specified text string.
         /// </summary>
@@ -3490,6 +3639,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawString(s, font, brush, new XRect(layoutRectangle), format);
         }
+
 #endif
 
         /// <summary>
@@ -3812,6 +3962,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         // ----- DrawImage ----------------------------------------------------------------------------
 
 #if GDI
+
         /// <summary>
         /// Draws the specified image.
         /// </summary>
@@ -3819,6 +3970,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawImage(image, point.X, point.Y);
         }
+
 #endif
 
 #if WPF
@@ -3832,6 +3984,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws the specified image.
         /// </summary>
@@ -3839,6 +3992,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawImage(image, point.X, point.Y);
         }
+
 #endif
 
         /// <summary>
@@ -3917,6 +4071,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Draws the specified image.
         /// </summary>
@@ -3925,9 +4080,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             // Because of overloading the cast is NOT redundant.
             DrawImage(image, (double)rect.X, (double)rect.Y, (double)rect.Width, (double)rect.Height);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws the specified image.
         /// </summary>
@@ -3935,6 +4092,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             DrawImage(image, rect.X, rect.Y, rect.Width, rect.Height);
         }
+
 #endif
 
         /// <summary>
@@ -4044,6 +4202,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         //public void DrawImage(XImage image, double x, double y, XRect srcRect, XGraphicsUnit srcUnit)
 
 #if GDI
+
         /// <summary>
         /// Draws the specified image.
         /// </summary>
@@ -4053,9 +4212,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             XRect srcRectX = new XRect(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height);
             DrawImage(image, destRectX, srcRectX, srcUnit);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Draws the specified image.
         /// </summary>
@@ -4065,6 +4226,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             XRect srcRectX = new XRect(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height);
             DrawImage(image, destRectX, srcRectX, srcUnit);
         }
+
 #endif
 
         /// <summary>
@@ -4147,7 +4309,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         //public void DrawImage(XImage image, Rectangle destRect, double srcX, double srcY, double srcWidth, double srcHeight, GraphicsUnit srcUnit);
         //public void DrawImage(XImage image, Rectangle destRect, double srcX, double srcY, double srcWidth, double srcHeight, GraphicsUnit srcUnit);
 
-        void DrawMissingImageRect(XRect rect)
+        private void DrawMissingImageRect(XRect rect)
         {
 #if GDI
             if (TargetContext == XGraphicTargetContext.GDI)
@@ -4190,7 +4352,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// <summary>
         /// Checks whether drawing is allowed and disposes the XGraphics object, if necessary.
         /// </summary>
-        void CheckXPdfFormConsistence(XImage image)
+        private void CheckXPdfFormConsistence(XImage image)
         {
             XForm xForm = image as XForm;
             if (xForm != null)
@@ -4313,7 +4475,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Restores the state of this XGraphics object to the state represented by the specified 
+        /// Restores the state of this XGraphics object to the state represented by the specified
         /// XGraphicsState object.
         /// </summary>
         public void Restore(XGraphicsState state)
@@ -4365,7 +4527,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Saves a graphics container with the current state of this XGraphics and 
+        /// Saves a graphics container with the current state of this XGraphics and
         /// opens and uses a new graphics container.
         /// </summary>
         public XGraphicsContainer BeginContainer()
@@ -4374,30 +4536,34 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
-        /// Saves a graphics container with the current state of this XGraphics and 
+        /// Saves a graphics container with the current state of this XGraphics and
         /// opens and uses a new graphics container.
         /// </summary>
         public XGraphicsContainer BeginContainer(Rectangle dstrect, Rectangle srcrect, XGraphicsUnit unit)
         {
             return BeginContainer(new XRect(dstrect), new XRect(dstrect), unit);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
-        /// Saves a graphics container with the current state of this XGraphics and 
+        /// Saves a graphics container with the current state of this XGraphics and
         /// opens and uses a new graphics container.
         /// </summary>
         public XGraphicsContainer BeginContainer(GdiRectF dstrect, GdiRectF srcrect, XGraphicsUnit unit)
         {
             return BeginContainer(new XRect(dstrect), new XRect(dstrect), unit);
         }
+
 #endif
 
 #if WPF
         /// <summary>
-        /// Saves a graphics container with the current state of this XGraphics and 
+        /// Saves a graphics container with the current state of this XGraphics and
         /// opens and uses a new graphics container.
         /// </summary>
         public XGraphicsContainer BeginContainer(Rect dstrect, Rect srcrect, XGraphicsUnit unit)
@@ -4407,7 +4573,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
         /// <summary>
-        /// Saves a graphics container with the current state of this XGraphics and 
+        /// Saves a graphics container with the current state of this XGraphics and
         /// opens and uses a new graphics container.
         /// </summary>
         public XGraphicsContainer BeginContainer(XRect dstrect, XRect srcrect, XGraphicsUnit unit)
@@ -4457,7 +4623,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Closes the current graphics container and restores the state of this XGraphics 
+        /// Closes the current graphics container and restores the state of this XGraphics
         /// to the state saved by a call to the BeginContainer method.
         /// </summary>
         public void EndContainer(XGraphicsContainer container)
@@ -4555,7 +4721,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
             }
         }
-        XSmoothingMode _smoothingMode;
+
+        private XSmoothingMode _smoothingMode;
 
         //public Region Clip { get; set; }
         //public GdiRectF ClipBounds { get; }
@@ -4583,7 +4750,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         #region Transformation
 
         /// <summary>
-        /// Applies the specified translation operation to the transformation matrix of this object by 
+        /// Applies the specified translation operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// </summary>
         public void TranslateTransform(double dx, double dy)
@@ -4603,7 +4770,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified scaling operation to the transformation matrix of this object by 
+        /// Applies the specified scaling operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// </summary>
         public void ScaleTransform(double scaleX, double scaleY)
@@ -4623,7 +4790,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified scaling operation to the transformation matrix of this object by 
+        /// Applies the specified scaling operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// </summary>
         // ReSharper disable once InconsistentNaming
@@ -4643,7 +4810,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified scaling operation to the transformation matrix of this object by 
+        /// Applies the specified scaling operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// </summary>
         public void ScaleAtTransform(double scaleX, double scaleY, double centerX, double centerY)
@@ -4652,7 +4819,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified scaling operation to the transformation matrix of this object by 
+        /// Applies the specified scaling operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// </summary>
         public void ScaleAtTransform(double scaleX, double scaleY, XPoint center)
@@ -4661,7 +4828,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified rotation operation to the transformation matrix of this object by 
+        /// Applies the specified rotation operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// </summary>
         public void RotateTransform(double angle)
@@ -4681,7 +4848,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified rotation operation to the transformation matrix of this object by 
+        /// Applies the specified rotation operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// </summary>
         public void RotateAtTransform(double angle, XPoint point)
@@ -4690,7 +4857,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified rotation operation to the transformation matrix of this object by 
+        /// Applies the specified rotation operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// </summary>
         public void RotateAtTransform(double angle, XPoint point, XMatrixOrder order)
@@ -4699,7 +4866,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified shearing operation to the transformation matrix of this object by 
+        /// Applies the specified shearing operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// ShearTransform is a synonym for SkewAtTransform.
         /// Parameter shearX specifies the horizontal skew which is measured in degrees counterclockwise from the y-axis.
@@ -4723,7 +4890,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified shearing operation to the transformation matrix of this object by 
+        /// Applies the specified shearing operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// ShearTransform is a synonym for SkewAtTransform.
         /// Parameter shearX specifies the horizontal skew which is measured in degrees counterclockwise from the y-axis.
@@ -4735,7 +4902,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Applies the specified shearing operation to the transformation matrix of this object by 
+        /// Applies the specified shearing operation to the transformation matrix of this object by
         /// prepending it to the object's transformation matrix.
         /// ShearTransform is a synonym for SkewAtTransform.
         /// Parameter shearX specifies the horizontal skew which is measured in degrees counterclockwise from the y-axis.
@@ -4775,7 +4942,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// <summary>
         /// Applies a new transformation to the current transformation matrix.
         /// </summary>
-        void AddTransform(XMatrix transform, XMatrixOrder order)
+        private void AddTransform(XMatrix transform, XMatrixOrder order)
         {
             XMatrix matrix = _transform;
             matrix.Multiply(transform, order);
@@ -4836,8 +5003,9 @@ namespace PdfSharp.Drawing  // #??? Clean up
         #region Clipping
 
 #if GDI
+
         /// <summary>
-        /// Updates the clip region of this XGraphics to the intersection of the 
+        /// Updates the clip region of this XGraphics to the intersection of the
         /// current clip region and the specified rectangle.
         /// </summary>
         public void IntersectClip(Rectangle rect)
@@ -4846,11 +5014,13 @@ namespace PdfSharp.Drawing  // #??? Clean up
             path.AddRectangle(rect);
             IntersectClip(path);
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
-        /// Updates the clip region of this XGraphics to the intersection of the 
+        /// Updates the clip region of this XGraphics to the intersection of the
         /// current clip region and the specified rectangle.
         /// </summary>
         public void IntersectClip(GdiRectF rect)
@@ -4859,10 +5029,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             path.AddRectangle(rect);
             IntersectClip(path);
         }
+
 #endif
 
         /// <summary>
-        /// Updates the clip region of this XGraphics to the intersection of the 
+        /// Updates the clip region of this XGraphics to the intersection of the
         /// current clip region and the specified rectangle.
         /// </summary>
         public void IntersectClip(XRect rect)
@@ -4873,7 +5044,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
         /// <summary>
-        /// Updates the clip region of this XGraphics to the intersection of the 
+        /// Updates the clip region of this XGraphics to the intersection of the
         /// current clip region and the specified graphical path.
         /// </summary>
         public void IntersectClip(XGraphicsPath path)
@@ -4959,7 +5130,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             get { return _internals ?? (_internals = new XGraphicsInternals(this)); }
         }
-        XGraphicsInternals _internals;
+
+        private XGraphicsInternals _internals;
 
         /// <summary>
         /// (Under construction. May change in future versions.)
@@ -4968,7 +5140,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             get { return _transformer ?? (_transformer = new SpaceTransformer(this)); }
         }
-        SpaceTransformer _transformer;
+
+        private SpaceTransformer _transformer;
 
         #endregion
 
@@ -4977,6 +5150,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         #region Internal Helper Functions
 
 #if GDI
+
         /// <summary>
         /// Converts a GdiPoint[] into a GdiPointF[].
         /// </summary>
@@ -4994,9 +5168,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             }
             return result;
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Converts a XPoint[] into a GdiPointF[].
         /// </summary>
@@ -5014,9 +5190,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             }
             return result;
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Converts a Point[] into a XPoint[].
         /// </summary>
@@ -5034,6 +5212,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             }
             return result;
         }
+
 #endif
 
 #if WPF || NETFX_CORE
@@ -5057,6 +5236,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
 #endif
 
 #if GDI
+
         /// <summary>
         /// Converts a GdiPointF[] into a XPoint[].
         /// </summary>
@@ -5074,9 +5254,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             }
             return result;
         }
+
 #endif
 
 #if GDI
+
         /// <summary>
         /// Converts a XRect[] into a GdiRectF[].
         /// </summary>
@@ -5094,6 +5276,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             }
             return result;
         }
+
 #endif
 
 #if WPF || NETFX_CORE
@@ -5148,20 +5331,24 @@ namespace PdfSharp.Drawing  // #??? Clean up
             get { return _internalGraphicsMode; }
             set { _internalGraphicsMode = value; }
         }
-        InternalGraphicsMode _internalGraphicsMode;
+
+        private InternalGraphicsMode _internalGraphicsMode;
 
         internal XImage AssociatedImage
         {
             get { return _associatedImage; }
             set { _associatedImage = value; }
         }
-        XImage _associatedImage;
+
+        private XImage _associatedImage;
 
 #if GDI
+
         /// <summary>
         /// Always defined System.Drawing.Graphics object. Used as 'query context' for PDF pages.
         /// </summary>
         internal Graphics _gfx;
+
 #endif
 
 #if WPF
@@ -5190,9 +5377,9 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// <summary>
         /// Indicates whether to send drawing operations to _gfx or _dc.
         /// </summary>
-        bool _drawGraphics;
+        private bool _drawGraphics;
 
-        readonly XForm _form;
+        private readonly XForm _form;
 
 #if GDI
         internal Metafile Metafile;
@@ -5201,17 +5388,17 @@ namespace PdfSharp.Drawing  // #??? Clean up
         /// <summary>
         /// Interface to an (optional) renderer. Currently it is the XGraphicsPdfRenderer, if defined.
         /// </summary>
-        IXGraphicsRenderer _renderer;
+        private IXGraphicsRenderer _renderer;
 
         /// <summary>
         /// The transformation matrix from XGraphics world space to page unit space.
         /// </summary>
-        XMatrix _transform;
+        private XMatrix _transform;
 
         /// <summary>
         /// The graphics state stack.
         /// </summary>
-        readonly GraphicsStateStack _gsStack;
+        private readonly GraphicsStateStack _gsStack;
 
         /// <summary>
         /// Gets the PDF page that serves as drawing surface if PDF is rendered,
@@ -5227,6 +5414,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         }
 
 #if GDI
+
         /// <summary>
         /// Gets the System.Drawing.Graphics objects that serves as drawing surface if no PDF is rendered,
         /// or null, if no such object exists.
@@ -5235,6 +5423,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
         {
             get { return _gfx; }
         }
+
 #endif
 
         //#if CORE || GDI
@@ -5254,9 +5443,11 @@ namespace PdfSharp.Drawing  // #??? Clean up
             {
                 _gfx = gfx;
             }
-            readonly XGraphics _gfx;
+
+            private readonly XGraphics _gfx;
 
 #if GDI
+
             /// <summary>
             /// Gets the underlying Graphics object.
             /// </summary>
@@ -5264,6 +5455,7 @@ namespace PdfSharp.Drawing  // #??? Clean up
             {
                 get { return _gfx._gfx; }
             }
+
 #endif
         }
 
@@ -5277,7 +5469,8 @@ namespace PdfSharp.Drawing  // #??? Clean up
             {
                 _gfx = gfx;
             }
-            readonly XGraphics _gfx;
+
+            private readonly XGraphics _gfx;
 
             /// <summary>
             /// Gets the smallest rectangle in default page space units that completely encloses the specified rect

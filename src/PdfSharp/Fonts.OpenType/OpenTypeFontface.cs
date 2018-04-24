@@ -1,5 +1,5 @@
-﻿
-#region PDFsharp - A .NET library for processing PDF
+﻿#region PDFsharp - A .NET library for processing PDF
+
 //
 // Authors:
 //   Stefan Lange
@@ -24,25 +24,20 @@
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
+
 #endregion
 
 #define VERBOSE_
 
 using System;
 using System.Diagnostics;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.IO;
+
 #if GDI
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using GdiFontFamily = System.Drawing.FontFamily;
-using GdiFont = System.Drawing.Font;
-using GdiFontStyle = System.Drawing.FontStyle;
 #endif
 #if WPF
 using System.Windows;
@@ -52,15 +47,13 @@ using WpfFontFamily = System.Windows.Media.FontFamily;
 using WpfTypeface = System.Windows.Media.Typeface;
 using WpfGlyphTypeface = System.Windows.Media.GlyphTypeface;
 #endif
-using PdfSharp.Fonts;
 #if !EDF_CORE
+
 using PdfSharp.Drawing;
-using PdfSharp.Internal;
+
 #endif
 
 using Fixed = System.Int32;
-using FWord = System.Int16;
-using UFWord = System.UInt16;
 
 #pragma warning disable 0649
 
@@ -75,11 +68,11 @@ namespace PdfSharp.Fonts.OpenType
         // Implementation Notes
         // OpenTypeFontface represents a 'decompiled' font file in memory.
         //
-        // * An OpenTypeFontface can belong to more than one 
+        // * An OpenTypeFontface can belong to more than one
         //   XGlyphTypeface because of StyleSimulations.
         //
         // * Currently there is a one to one relationship to XFontSource.
-        // 
+        //
         // * Consider OpenTypeFontface as an decompiled XFontSource.
         //
         // http://www.microsoft.com/typography/otspec/
@@ -87,7 +80,7 @@ namespace PdfSharp.Fonts.OpenType
         /// <summary>
         /// Shallow copy for font subset.
         /// </summary>
-        OpenTypeFontface(OpenTypeFontface fontface)
+        private OpenTypeFontface(OpenTypeFontface fontface)
         {
             _offsetTable = fontface._offsetTable;
             _fullFaceName = fontface._fullFaceName;
@@ -110,7 +103,7 @@ namespace PdfSharp.Fonts.OpenType
         {
             FontSource = fontSource;
             Read();
-            _fullFaceName = name.FullFontName;
+            _fullFaceName = name?.FullFontName;
         }
 
         public static OpenTypeFontface CetOrCreateFrom(XFontSource fontSource)
@@ -135,7 +128,8 @@ namespace PdfSharp.Fonts.OpenType
         {
             get { return _fullFaceName; }
         }
-        readonly string _fullFaceName;
+
+        private readonly string _fullFaceName;
 
         public ulong CheckSum
         {
@@ -146,7 +140,8 @@ namespace PdfSharp.Fonts.OpenType
                 return _checkSum;
             }
         }
-        ulong _checkSum;
+
+        private ulong _checkSum;
 
         /// <summary>
         /// Gets the bytes that represents the font data.
@@ -162,7 +157,8 @@ namespace PdfSharp.Fonts.OpenType
                 _fontSource = value;
             }
         }
-        XFontSource _fontSource;
+
+        private XFontSource _fontSource;
 
         internal FontTechnology _fontTechnology;
 
@@ -176,6 +172,7 @@ namespace PdfSharp.Fonts.OpenType
         // Keep names identical to OpenType spec.
         // ReSharper disable InconsistentNaming
         internal CMapTable cmap;
+
         internal ControlValueTable cvt;
         internal FontProgram fpgm;
         internal MaximumProfileTable maxp;
@@ -297,7 +294,7 @@ namespace PdfSharp.Fonts.OpenType
             // Determine font technology
             // ReSharper disable InconsistentNaming
             const uint OTTO = 0x4f54544f;  // Adobe OpenType CFF data, tag: 'OTTO'
-            const uint TTCF = 0x74746366;  // TrueType Collection tag: 'ttcf'  
+            const uint TTCF = 0x74746366;  // TrueType Collection tag: 'ttcf'
             // ReSharper restore InconsistentNaming
             try
             {
@@ -333,7 +330,10 @@ namespace PdfSharp.Fonts.OpenType
                 for (int idx = 0; idx < _offsetTable.TableCount; idx++)
                 {
                     TableDirectoryEntry entry = TableDirectoryEntry.ReadFrom(this);
-                    TableDictionary.Add(entry.Tag, entry);
+                    if (!TableDictionary.ContainsKey(entry.Tag))
+                    {
+                        TableDictionary.Add(entry.Tag, entry);
+                    }
 #if VERBOSE
           Debug.WriteLine(String.Format("Font table: {0}", entry.Tag));
 #endif
@@ -476,7 +476,7 @@ namespace PdfSharp.Fonts.OpenType
         /// <summary>
         /// Compiles the font to its binary representation.
         /// </summary>
-        void Compile()
+        private void Compile()
         {
             MemoryStream stream = new MemoryStream();
             OpenTypeFontWriter writer = new OpenTypeFontWriter(stream);
@@ -527,15 +527,17 @@ namespace PdfSharp.Fonts.OpenType
             int l = (int)writer.Stream.Length;
             FontSource = XFontSource.CreateCompiledFont(stream.ToArray());
         }
+
         // 2^entrySelector[n] <= n
-        static readonly int[] _entrySelectors = { 0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
+        private static readonly int[] _entrySelectors = { 0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
 
         public int Position
         {
             get { return _pos; }
             set { _pos = value; }
         }
-        int _pos;
+
+        private int _pos;
 
         public int Seek(string tag)
         {
